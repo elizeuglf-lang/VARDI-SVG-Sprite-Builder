@@ -15,7 +15,7 @@ SVG bruto → validação → parse DOM → sanitização → inlining de defs e
 - **Namespacing de IDs**: `<symbolId>--<idOriginal>`. Quatro ícones com `<linearGradient id="grad">` convivem no mesmo sprite sem colisão; `href`, `xlink:href`, `url(#...)`, `begin`/`end` (SMIL), `aria-labelledby` e `aria-describedby` são reescritos junto.
 - **Inlining de referências externas**: gradientes, clipPaths etc. definidos fora do `<symbol>` são clonados para um `<defs>` dentro dele, tornando o símbolo autocontido (limite de 5 passadas e 60 clones contra explosão de referências).
 - **Normalização de cores**: ícone de uma cor vira `currentColor`; ícone de traço mantém `fill="none"`; ícones multicoloridos, com gradiente, filtro, máscara, pattern ou `url()` em fill/stroke são preservados intactos. Com animação SMIL, a preservação é **por atributo**: só ficam intactos se a animação mexe em atributo de cor (`fill`, `stroke`, `stop-color`, `flood-color`, `lighting-color`, `color`). Um spinner que anima só `transform` ou `opacity` continua obedecendo ao `currentColor` do tema.
-- **Estático × animado**: cada ícone é classificado (`animate`, `animateTransform`, `animateMotion`, `animateColor`, `set`, `discard`) e recebe um selo na galeria.
+- **Estático × animado**: cada ícone é classificado (`animate`, `animateTransform`, `animateMotion`, `animateColor`, `set`) e recebe um selo na galeria.
 - **Validação com fallback**: toda otimização é conferida e descartada se quebrar algo (veja abaixo).
 - **Relatório de ganho** por ícone e do sprite final.
 - **Otimização semântica** (opcional, veja abaixo).
@@ -111,7 +111,7 @@ O SVG é tratado como documento ativo, não como imagem inerte. Camadas, na orde
 
 1. Limite de tamanho da requisição e **token CSRF** (comparado com `hash_equals`).
 2. Bloqueio de `DOCTYPE`/`ENTITY` (XXE) e `LIBXML_NONET`; `libxml_disable_entity_loader` quando disponível.
-3. Remoção de elementos perigosos, sem diferenciar maiúsculas: `script`, `iframe`, `object`, `embed`, `link`, `style`, `foreignObject`, `a`, `handler`, `listener`, `image`.
+3. Remoção de elementos perigosos, sem diferenciar maiúsculas: `script`, `iframe`, `object`, `embed`, `link`, `style`, `foreignObject`, `a`, `handler`, `listener`, `image`, `discard`.
 4. Remoção de comentários, de todos os atributos `on*` e do atributo `style`.
 5. `href`/`xlink:href` só são aceitos como referência interna (`#id`).
 6. `url(...)` em qualquer atributo só é aceito como referência interna; o atributo inteiro é removido caso contrário.
@@ -138,7 +138,7 @@ Definidos por constantes no começo do bloco de tratamento de requisições em `
 - Arquivo com `<symbol>` é tratado como sprite: um `<svg>` avulso que também contenha símbolos não é importado como ícone à parte.
 - O sufixo de duplicata (`--2`, `--3`) é ambíguo: um ícone legitimamente chamado `weather--2` é tratado como duplicata de `weather`.
 - `<style>` e `class` são removidos pela sanitização: SVGs que colorem via CSS (ex.: `.cls-1{fill:#f00}`, comum em exportações do Illustrator) perdem essas cores.
-- `<image>`, `<a>` e `<foreignObject>` são removidos.
+- `<image>`, `<a>`, `<foreignObject>` e `<discard>` são removidos.
 - Cada resposta devolve todos os ícones da sessão; com milhares de ícones complexos a interface pode ficar pesada.
 - Não há suíte de testes automatizados. Teste com seus SVGs antes de usar em produção.
 
